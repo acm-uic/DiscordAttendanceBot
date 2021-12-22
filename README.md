@@ -5,6 +5,8 @@
 
 > Docker image here -> https://hub.docker.com/r/christianbingman/discord-bot
 
+View the [Docs](https://htmlpreview.github.io/?https://raw.githubusercontent.com/acm-uic/DiscordAttendanceBot/main/docs/index.html)
+
 ## Features
 ✔ **API Documentation with JSDocs**
 
@@ -107,7 +109,7 @@ npm run dockerbuildmultiarch
 
 ## Extending the functionality
 
-Included is the `Middleware` class of the `middleware.ts` file. This class has several functions that handles accepting users, and handling starting/resetting of events. This can be extended to check calendars or other sources! For more information please check the [docs](docs/middleware.js.html)
+Included is the `Middleware` class of the `middleware.ts` file. This class has several functions that handles accepting users, and handling starting/resetting of events. This can be extended to check calendars or other sources! For more information please check the [docs](https://htmlpreview.github.io/?https://github.com/acm-uic/DiscordAttendanceBot/blob/main/docs/middleware.js.html)
 
 ## Troubleshooting
 `Docker unable to find dist`
@@ -117,4 +119,4 @@ Included is the `Middleware` class of the `middleware.ts` file. This class has s
 - Christian Bingman
 
 #### NOTICE
-Copyright (c) Christian Bingman. All Rights Reserved
+Copyright (c) ACM@UIC. All Rights Reserved
