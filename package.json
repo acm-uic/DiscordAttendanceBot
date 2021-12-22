@@ -1,0 +1,44 @@
+{
+  "name": "discordattendancebot",
+  "version": "1.0.0",
+  "description": "Bot to keep track of attendees at meetings",
+  "main": "index.js",
+  "scripts": {
+    "start": "nodemon index.ts",
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "tsc --build; cp ./package.json ./dist/; jsdoc -c jsdoc-config.json",
+    "clean": "rm -rf ./dist ./docs",
+    "dockerbuild": "DOCKER_BUILDKIT=1 docker build -t christianbingman/discord-bot:latest .",
+    "dockerbuildmultiarch": "DOCKER_BUILDKIT=1 docker buildx build -t christianbingman/discord-bot:latest --platform linux/amd64,linux/arm64,linux/arm/v7 --push ."
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/acm-uic/DiscordAttendanceBot.git"
+  },
+  "keywords": [
+    "discord",
+    "bot",
+    "ACM"
+  ],
+  "author": "Christian Bingman",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/acm-uic/DiscordAttendanceBot/issues"
+  },
+  "homepage": "https://github.com/acm-uic/DiscordAttendanceBot#readme",
+  "devDependencies": {
+    "@types/dotenv": "^8.2.0",
+    "jsdoc": "^3.6.7",
+    "nodemon": "^2.0.15",
+    "ts-node": "^10.4.0",
+    "typescript": "^4.5.4"
+  },
+  "dependencies": {
+    "@discordjs/builders": "^0.9.0",
+    "@discordjs/rest": "^0.2.0-canary.0",
+    "discord-api-types": "^0.25.2",
+    "discord.js": "^13.3.1",
+    "dotenv": "^10.0.0",
+    "mongoose": "^6.1.2"
+  }
+}

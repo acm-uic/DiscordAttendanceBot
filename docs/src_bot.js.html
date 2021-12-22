@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: src/bot.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: src/bot.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>"use strict";
+var __createBinding = (this &amp;&amp; this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this &amp;&amp; this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this &amp;&amp; this.__importStar) || function (mod) {
+    if (mod &amp;&amp; mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" &amp;&amp; Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
+var __awaiter = (this &amp;&amp; this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+var __importDefault = (this &amp;&amp; this.__importDefault) || function (mod) {
+    return (mod &amp;&amp; mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+const discord_js_1 = __importStar(require("discord.js"));
+const v9_1 = require("discord-api-types/v9");
+const rest_1 = require("@discordjs/rest");
+const here_1 = require("./discord_commands/here");
+const override_1 = require("./discord_commands/override");
+const startevent_1 = require("./discord_commands/startevent");
+const resetevent_1 = require("./discord_commands/resetevent");
+const cleardb_1 = require("./discord_commands/cleardb");
+const middleware_1 = __importDefault(require("../middleware"));
+const score_1 = require("./discord_commands/score");
+class Bot {
+    /**
+     * @constructor
+     * @param {ScoreController} scorecontroller - Database controller object
+     * @param {options} options - Options Object
+     */
+    constructor(scorecontroller, options) {
+        this._scorecontroller = scorecontroller;
+        this._options = options;
+        this._client = new discord_js_1.default.Client({ intents: [discord_js_1.Intents.FLAGS.GUILDS, discord_js_1.Intents.FLAGS.GUILD_MESSAGES] });
+        this._client.login(this._options.TOKEN);
+        this._rest = new rest_1.REST({ version: "9" }).setToken(options.TOKEN);
+        this._middleware = new middleware_1.default(scorecontroller, this._client, this._options);
+        // Add commands here
+        this._commands = [
+            here_1.HereCommand,
+            override_1.OverrideCommand,
+            startevent_1.StartEventCommand,
+            resetevent_1.ResetEventCommand,
+            cleardb_1.ClearCommand,
+            score_1.ScoreCommand
+        ].map(command => JSON.parse(command));
+        console.log("Bot Created!");
+    }
+    /**
+     * Puts the custom commands into the REST api
+     * @private
+     * @async
+     */
+    _buildCommands() {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                if (this._options.DEPLOYMENT == "development") {
+                    // Send commands to the discord API for the specified guild
+                    yield this._rest.put(v9_1.Routes.applicationGuildCommands(this._options.CLIENTID, this._options.GUILDID), {
+                        body: this._commands
+                    });
+                }
+                else {
+                    // Send commands to the discord API for global use
+                    yield this._rest.put(v9_1.Routes.applicationCommands(this._options.CLIENTID), {
+                        body: this._commands
+                    });
+                }
+                console.log("Successfully loaded commands!");
+            }
+            catch (error) {
+                console.log(String(error));
+            }
+        });
+    }
+    /**
+     * Starts listening for actions to the Discord API
+     * @public
+     */
+    run() {
+        this._buildCommands();
+        // When the discord bot is logged in, show its name and tag
+        this._client.on('ready', () => {
+            console.log(`Logged in as ${this._client.user.tag}`);
+        });
+        this._client.on('interactionCreate', (interaction) => __awaiter(this, void 0, void 0, function* () {
+            if (!interaction.isCommand())
+                return;
+            // Checks the command, and sends it to its respective handler
+            switch (interaction.commandName) {
+                case "here":
+                    yield (0, here_1.HereCommandHandler)(interaction, this._scorecontroller, this._middleware, this._options);
+                    break;
+                case "override":
+                    yield (0, override_1.OverrideCommandHandler)(interaction, this._scorecontroller, this._middleware, this._options);
+                    break;
+                case "startevent":
+                    yield (0, startevent_1.StartEventCommandHandler)(interaction, this._middleware, this._options);
+                    break;
+                case "resetevent":
+                    yield (0, resetevent_1.ResetEventCommandHandler)(interaction, this._middleware, this._options);
+                    break;
+                case "cleardb":
+                    yield (0, cleardb_1.ClearCommandHandler)(interaction, this._scorecontroller, this._middleware, this._options);
+                    break;
+                case "score":
+                    yield (0, score_1.ScoreCommandHandler)(interaction, this._scorecontroller);
+                    break;
+                default:
+                    break;
+            }
+        }));
+    }
+}
+exports.default = Bot;
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="Bot.html">Bot</a></li><li><a href="IScore.html">IScore</a></li><li><a href="Middleware.html">Middleware</a></li><li><a href="ScoreController.html">ScoreController</a></li></ul><h3>Global</h3><ul><li><a href="global.html#ADDRESS">ADDRESS</a></li><li><a href="global.html#ClearCommand">ClearCommand</a></li><li><a href="global.html#ClearCommandHandler">ClearCommandHandler</a></li><li><a href="global.html#DB">DB</a></li><li><a href="global.html#HereCommand">HereCommand</a></li><li><a href="global.html#HereCommandHandler">HereCommandHandler</a></li><li><a href="global.html#init">init</a></li><li><a href="global.html#OverrideCommand">OverrideCommand</a></li><li><a href="global.html#OverrideCommandHandler">OverrideCommandHandler</a></li><li><a href="global.html#PASSWORD">PASSWORD</a></li><li><a href="global.html#ResetEventCommand">ResetEventCommand</a></li><li><a href="global.html#ResetEventCommandHandler">ResetEventCommandHandler</a></li><li><a href="global.html#Score">Score</a></li><li><a href="global.html#ScoreCommand">ScoreCommand</a></li><li><a href="global.html#ScoreCommandHandler">ScoreCommandHandler</a></li><li><a href="global.html#StartEventCommand">StartEventCommand</a></li><li><a href="global.html#StartEventCommandHandler">StartEventCommandHandler</a></li><li><a href="global.html#USERNAME">USERNAME</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 3.6.7</a> on Tue Dec 21 2021 23:58:01 GMT-0600 (Central Standard Time)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

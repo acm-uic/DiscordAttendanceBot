@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: src/discord_commands/override.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: src/discord_commands/override.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>"use strict";
+var __awaiter = (this &amp;&amp; this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.OverrideCommandHandler = exports.OverrideCommand = void 0;
+const builders_1 = require("@discordjs/builders");
+/**
+ * Create "Override" command which accepts a user and a score
+ * @type {string}
+ */
+exports.OverrideCommand = JSON.stringify(new builders_1.SlashCommandBuilder()
+    .setName("override")
+    .setDescription("Override a user's score (administrator only)")
+    .addUserOption(new builders_1.SlashCommandUserOption()
+    .setName("user")
+    .setDescription("User to modify points for")
+    .setRequired(true))
+    .addIntegerOption(new builders_1.SlashCommandIntegerOption()
+    .setName("score")
+    .setDescription("The score to set")
+    .setRequired(true)).toJSON());
+/**
+ * Handles overriding score for a given user, checks admin role for execute permissions
+ * @async
+ * @param {Discord.CommandInteraction&lt;Discord.CacheType>} interaction - Discord Interaction Object
+ * @param {ScoreController} scorecontroller - Database controller
+ * @param {Middleware} middleware - Middleware controller to add interaction
+ * @param {options} options - Global options object
+ */
+function OverrideCommandHandler(interaction, scorecontroller, middleware, options) {
+    var _a;
+    return __awaiter(this, void 0, void 0, function* () {
+        const user = interaction.options.getUser('user', true);
+        const score = interaction.options.getInteger('score', true);
+        const roles = interaction.member.roles;
+        if (roles.cache.has(options.ADMINROLEID)) {
+            console.log(interaction.user.id + " : " + interaction.user.tag + " overrode user: " + user.tag);
+            scorecontroller.setScore(user.id, score);
+            yield interaction.reply({
+                content: "User: " + user.username + " now has a score of: " + score,
+                ephemeral: true
+            });
+            // Check and update the roles of the user
+            yield middleware.updateRole((yield ((_a = interaction.guild) === null || _a === void 0 ? void 0 : _a.members.fetch(user))));
+        }
+        else {
+            yield interaction.reply({
+                content: "You do not have permission to access this!",
+                ephemeral: true,
+            });
+        }
+    });
+}
+exports.OverrideCommandHandler = OverrideCommandHandler;
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="Bot.html">Bot</a></li><li><a href="IScore.html">IScore</a></li><li><a href="Middleware.html">Middleware</a></li><li><a href="ScoreController.html">ScoreController</a></li></ul><h3>Global</h3><ul><li><a href="global.html#ADDRESS">ADDRESS</a></li><li><a href="global.html#ClearCommand">ClearCommand</a></li><li><a href="global.html#ClearCommandHandler">ClearCommandHandler</a></li><li><a href="global.html#DB">DB</a></li><li><a href="global.html#HereCommand">HereCommand</a></li><li><a href="global.html#HereCommandHandler">HereCommandHandler</a></li><li><a href="global.html#init">init</a></li><li><a href="global.html#OverrideCommand">OverrideCommand</a></li><li><a href="global.html#OverrideCommandHandler">OverrideCommandHandler</a></li><li><a href="global.html#PASSWORD">PASSWORD</a></li><li><a href="global.html#ResetEventCommand">ResetEventCommand</a></li><li><a href="global.html#ResetEventCommandHandler">ResetEventCommandHandler</a></li><li><a href="global.html#Score">Score</a></li><li><a href="global.html#ScoreCommand">ScoreCommand</a></li><li><a href="global.html#ScoreCommandHandler">ScoreCommandHandler</a></li><li><a href="global.html#StartEventCommand">StartEventCommand</a></li><li><a href="global.html#StartEventCommandHandler">StartEventCommandHandler</a></li><li><a href="global.html#USERNAME">USERNAME</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 3.6.7</a> on Tue Dec 21 2021 23:58:01 GMT-0600 (Central Standard Time)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

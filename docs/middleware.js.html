@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: middleware.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: middleware.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>"use strict";
+// This file handles various verification checks
+var __awaiter = (this &amp;&amp; this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+class Middleware {
+    /**
+     * Setup initial variables to use for handlers
+     * @class
+     * @param {ScoreController} scorecontroller - Database controller object
+     */
+    constructor(scorecontroller, client, options) {
+        this._client = client;
+        this._options = options;
+        this._time = 0;
+        this._lengthOfEvent = 3600000;
+        this._checkedIn = [];
+        this._scorecontroller = scorecontroller;
+    }
+    /**
+     * Handler for calling handle start event
+     * @public
+     * @param {number} eventlength - Length of the event in milliseconds
+     */
+    handleStartEvent(eventlength) {
+        this._time = Date.now();
+        this._checkedIn = [];
+        this._lengthOfEvent = eventlength;
+    }
+    /**
+     * Handles when a user calls /here
+     * @param {string} userid - The UID of the user checking in
+     * @returns {boolean} Whether or not to accept the here request
+     */
+    allowHere(userid) {
+        if (!this._checkedIn.includes(userid) &amp;&amp; (Date.now() - this._time) &lt; this._lengthOfEvent) {
+            this._checkedIn.push(userid);
+            return true;
+        }
+        return false;
+    }
+    /**
+     * Handles the /resetevent command
+     */
+    handleResetEvent() {
+        this._time = 0;
+    }
+    /**
+     * Checks and updates the role for the given user
+     * @async
+     * @param {Discord.GuildMember} user - The GuildMember object that needs its roles checked
+     * @param {options} options - Options object
+     */
+    updateRole(user) {
+        return __awaiter(this, void 0, void 0, function* () {
+            // Get the users current score
+            let score = yield this._scorecontroller.getScoreByUserID(user.id);
+            if (this._options.LEVEL1ROLEID) {
+                if (score.score > 0) {
+                    user.roles.add(this._options.LEVEL1ROLEID);
+                }
+                else {
+                    user.roles.remove(this._options.LEVEL1ROLEID);
+                }
+            }
+            if (this._options.LEVEL2ROLEID) {
+                if (score.score > 15) {
+                    user.roles.add(this._options.LEVEL2ROLEID);
+                }
+                else {
+                    user.roles.remove(this._options.LEVEL2ROLEID);
+                }
+            }
+            if (this._options.LEVEL3ROLEID) {
+                if (score.score > 30) {
+                    user.roles.add(this._options.LEVEL3ROLEID);
+                }
+                else {
+                    user.roles.remove(this._options.LEVEL3ROLEID);
+                }
+            }
+            if (this._options.LEVEL4ROLEID) {
+                if (score.score > 70) {
+                    user.roles.add(this._options.LEVEL4ROLEID);
+                }
+                else {
+                    user.roles.remove(this._options.LEVEL4ROLEID);
+                }
+            }
+        });
+    }
+    /**
+     * Clears all of the roles from the users in the database (this is run directly before the database is cleared)
+     * @async
+     * @param {Discord.CommandInteraction&lt;Discord.CacheType>} interaction The discord interaction object
+     */
+    clearAllRoles(interaction) {
+        return __awaiter(this, void 0, void 0, function* () {
+            // Remove all roles for users\
+            const scores = yield this._scorecontroller.getAllUsers();
+            scores.forEach((user) => __awaiter(this, void 0, void 0, function* () {
+                var _a;
+                const duser = yield ((_a = interaction.guild) === null || _a === void 0 ? void 0 : _a.members.cache.get(user.user));
+                duser === null || duser === void 0 ? void 0 : duser.roles.remove(this._options.LEVEL1ROLEID);
+                duser === null || duser === void 0 ? void 0 : duser.roles.remove(this._options.LEVEL2ROLEID);
+                duser === null || duser === void 0 ? void 0 : duser.roles.remove(this._options.LEVEL3ROLEID);
+                duser === null || duser === void 0 ? void 0 : duser.roles.remove(this._options.LEVEL4ROLEID);
+            }));
+        });
+    }
+}
+exports.default = Middleware;
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="Bot.html">Bot</a></li><li><a href="IScore.html">IScore</a></li><li><a href="Middleware.html">Middleware</a></li><li><a href="ScoreController.html">ScoreController</a></li></ul><h3>Global</h3><ul><li><a href="global.html#ADDRESS">ADDRESS</a></li><li><a href="global.html#ClearCommand">ClearCommand</a></li><li><a href="global.html#ClearCommandHandler">ClearCommandHandler</a></li><li><a href="global.html#DB">DB</a></li><li><a href="global.html#HereCommand">HereCommand</a></li><li><a href="global.html#HereCommandHandler">HereCommandHandler</a></li><li><a href="global.html#init">init</a></li><li><a href="global.html#OverrideCommand">OverrideCommand</a></li><li><a href="global.html#OverrideCommandHandler">OverrideCommandHandler</a></li><li><a href="global.html#PASSWORD">PASSWORD</a></li><li><a href="global.html#ResetEventCommand">ResetEventCommand</a></li><li><a href="global.html#ResetEventCommandHandler">ResetEventCommandHandler</a></li><li><a href="global.html#Score">Score</a></li><li><a href="global.html#ScoreCommand">ScoreCommand</a></li><li><a href="global.html#ScoreCommandHandler">ScoreCommandHandler</a></li><li><a href="global.html#StartEventCommand">StartEventCommand</a></li><li><a href="global.html#StartEventCommandHandler">StartEventCommandHandler</a></li><li><a href="global.html#USERNAME">USERNAME</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 3.6.7</a> on Tue Dec 21 2021 23:58:01 GMT-0600 (Central Standard Time)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

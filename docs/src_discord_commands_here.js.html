@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: src/discord_commands/here.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: src/discord_commands/here.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>"use strict";
+var __awaiter = (this &amp;&amp; this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.HereCommandHandler = exports.HereCommand = void 0;
+const builders_1 = require("@discordjs/builders");
+/**
+ * Creates a command "here" with a user option
+ * @type {string}
+ */
+exports.HereCommand = JSON.stringify(new builders_1.SlashCommandBuilder()
+    .setName("here")
+    .setDescription("Counts meeting attendance, with optional user")
+    .addUserOption(new builders_1.SlashCommandUserOption()
+    .setName("user")
+    .setDescription("User to add a point to (SIG Leader ONLY)")
+    .setRequired(false)).toJSON());
+/**
+ * Handles Hero command which accepts a user. Handles checking permissions for caller.
+ * @async
+ * @param {Discord.CommandInteraction&lt;Discord.CacheType>} interaction - The interaction object from the Discord API
+ * @param {ScoreController} scorecontroller - The database object
+ * @param {Middleware} middleware - Middleware object for allowHere()
+ * @param {options} options - Options object
+ */
+function HereCommandHandler(interaction, scorecontroller, middleware, options) {
+    var _a;
+    return __awaiter(this, void 0, void 0, function* () {
+        const user = interaction.options.getUser('user');
+        // Handle optional user option
+        if (!user) {
+            // Check if action is allowed by user
+            if (middleware.allowHere(interaction.user.id)) {
+                let newScore = yield scorecontroller.incrementUserOrAdd(interaction.user.id);
+                yield interaction.reply({
+                    content: String("You now have a score of: " + newScore),
+                    ephemeral: true
+                });
+                // CHeck and update the roles of the user
+                yield middleware.updateRole(interaction.member);
+            }
+            else {
+                yield interaction.reply({
+                    content: "There is no ongoing event at the moment, or you have already checked in!",
+                    ephemeral: true
+                });
+            }
+        }
+        else {
+            // Check permissions
+            if (interaction.member.roles.cache.has(options.ADMINROLEID) || (options.MODROLEID &amp;&amp; interaction.member.roles.cache.has(options.MODROLEID))) {
+                console.log(interaction.user.id + " : " + interaction.user.tag + " has updated user: " + user.tag);
+                let newScore = yield scorecontroller.incrementUserOrAdd(user.id);
+                yield interaction.reply({
+                    content: String("User: " + user.username + " now has a score of: " + newScore),
+                    ephemeral: true
+                });
+                // Update role
+                yield middleware.updateRole((yield ((_a = interaction.guild) === null || _a === void 0 ? void 0 : _a.members.fetch(user))));
+            }
+            else {
+                yield interaction.reply({
+                    content: "You do not have permission to execute this!",
+                    ephemeral: true
+                });
+            }
+        }
+        return;
+    });
+}
+exports.HereCommandHandler = HereCommandHandler;
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="Bot.html">Bot</a></li><li><a href="IScore.html">IScore</a></li><li><a href="Middleware.html">Middleware</a></li><li><a href="ScoreController.html">ScoreController</a></li></ul><h3>Global</h3><ul><li><a href="global.html#ADDRESS">ADDRESS</a></li><li><a href="global.html#ClearCommand">ClearCommand</a></li><li><a href="global.html#ClearCommandHandler">ClearCommandHandler</a></li><li><a href="global.html#DB">DB</a></li><li><a href="global.html#HereCommand">HereCommand</a></li><li><a href="global.html#HereCommandHandler">HereCommandHandler</a></li><li><a href="global.html#init">init</a></li><li><a href="global.html#OverrideCommand">OverrideCommand</a></li><li><a href="global.html#OverrideCommandHandler">OverrideCommandHandler</a></li><li><a href="global.html#PASSWORD">PASSWORD</a></li><li><a href="global.html#ResetEventCommand">ResetEventCommand</a></li><li><a href="global.html#ResetEventCommandHandler">ResetEventCommandHandler</a></li><li><a href="global.html#Score">Score</a></li><li><a href="global.html#ScoreCommand">ScoreCommand</a></li><li><a href="global.html#ScoreCommandHandler">ScoreCommandHandler</a></li><li><a href="global.html#StartEventCommand">StartEventCommand</a></li><li><a href="global.html#StartEventCommandHandler">StartEventCommandHandler</a></li><li><a href="global.html#USERNAME">USERNAME</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 3.6.7</a> on Tue Dec 21 2021 23:58:01 GMT-0600 (Central Standard Time)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>
